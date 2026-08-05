@@ -1,14 +1,10 @@
 import streamlit as st
-
-
-conn = st.connection("neon", type="sql")
-
+from services.auth import authenticate
 with st.form("Login"):
-    fname = st.text_input("First Name")
-    lname = st.text_input("Last Name")
     email = st.text_input("Email")
+    password = st.text_input("Password")
 
     submitted = st.form_submit_button("Submit")
 
 if submitted:
-    st.write(f"hello {fname} {lname}")
+    authenticate(email, password)
