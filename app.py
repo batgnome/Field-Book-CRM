@@ -12,10 +12,13 @@
 # for row in df.itertuples():
 #     st.write(f"{row.company} has a :{row.company}:")
 import streamlit as st
+
 pages = [
-    st.Page("pages/login"),
-    st.Page("pages/test.py")
+    st.Page("pages/login.py"),
+    st.Page("pages/test.py"),
+    st.Page("pages/signup.py")
 ]
+pg = st.navigation(pages)
 pg = st.navigation(pages)
 
 pg.run()
