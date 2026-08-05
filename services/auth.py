@@ -1,4 +1,5 @@
 from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
 from db.users import create_user, get_user_by_email
 ph = PasswordHasher()
 
@@ -19,7 +20,7 @@ def authenticate(email, password):
     if user is None:
         return False
     try:
-        ph.verify(user.passwordHash, password)
-        return True
-    except VerifyMisMatchError:
+        ph.verify(user, password)
+        return user
+    except VerifyMismatchError:
         return False
