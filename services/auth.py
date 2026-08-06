@@ -15,7 +15,7 @@ def register_user(userFname, userLname, email, phone, role,password):
         password_hash
     )
 def authenticate(email, password):
-    user = get_user_by_email(email)
+    user = get_user_by_email(email).iloc[0]["passwordhash"]
 
     if user is None:
         return False

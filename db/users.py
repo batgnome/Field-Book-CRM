@@ -32,11 +32,11 @@ def check_existing_user(email):
 
 
 def get_user_by_email(email):
-    result = conn.query("Select passwordhash from users where email = :email", params={"email" : email})
+    result = conn.query("Select * from users where email = :email", params={"email" : email})
     if result.empty:
         return None
 
-    return result.iloc[0]["passwordhash"]
+    return result
     # userId int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     # userFname varchar NOT NULL,
     # userLname varchar NOT NULL,

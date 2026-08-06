@@ -12,13 +12,23 @@
 # for row in df.itertuples():
 #     st.write(f"{row.company} has a :{row.company}:")
 import streamlit as st
+if "user" not in st.session_state:
+    st.session_state.user = None
+st.header("Welcome to the Streamlit App")
+if st.session_state.user is None:
+    
+    pages = [
+        st.Page("pages/login.py"),
+    
+        st.Page("pages/signup.py")
+    ]
+else:
+    pages = [
+        st.Page("pages/test.py"),
+        st.Page("pages/logout.py"),
+        st.Page("pages/profile.py") 
+    ]
+pg = st.navigation(pages,position="top")
 
-pages = [
-    st.Page("pages/login.py"),
-    st.Page("pages/test.py"),
-    st.Page("pages/signup.py")
-]
-pg = st.navigation(pages)
-pg = st.navigation(pages)
 
 pg.run()
