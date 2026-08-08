@@ -30,7 +30,12 @@ def check_existing_user(email):
     result = conn.query("Select 1 from users where email = :email", params={"email" : email})
     return not result.empty()
 
+def get_user_password(email):
+    result = conn.query("Select passwordHash from users where email = :email", params={"email" : email})
+    if result.empty:
+        return None
 
+    return result.iloc[0]["passwordhash"]
 def get_user_by_email(email):
     result = conn.query("Select * from users where email = :email", params={"email" : email})
     if result.empty:
