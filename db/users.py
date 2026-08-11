@@ -1,5 +1,6 @@
 from sqlalchemy import text
 from db.connection import conn
+from  models.user import User
 
 
 def create_user(userFname, userLname, email, phone, role, passwordHash):
@@ -28,20 +29,29 @@ def check_existing_user(email):
 
     
     result = conn.query("Select 1 from users where email = :email", params={"email" : email})
-    return not result.empty()
+    return not result.empty
 
 def get_user_password(email):
-    result = conn.query("Select passwordHash from users where email = :email", params={"email" : email})
+    result = conn.query("Select passwordhash from users where email = :email", params={"email" : email})
     if result.empty:
         return None
 
     return result.iloc[0]["passwordhash"]
 def get_user_by_email(email):
+   
     result = conn.query("Select * from users where email = :email", params={"email" : email})
     if result.empty:
         return None
-
-    return result
+    row = result.iloc[0]
+    user = User(
+        user_id=row["userid"],
+        first_name=row["userfname"],
+        last_name=row["userlname"],
+        email=row["email"],
+        phone=row["phone"],
+        role=row["role"]
+    )
+    return user, row["passwordhash"]
     # userId int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     # userFname varchar NOT NULL,
     # userLname varchar NOT NULL,

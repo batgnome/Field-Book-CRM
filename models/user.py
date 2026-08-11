@@ -8,3 +8,5 @@ class User:
     email: str
     phone: str | None
     role: str
+    
+    
