@@ -1,17 +1,5 @@
 import streamlit as st
-from db.accounts import get_accounts, create_account
-
-if "user" not in st.session_state:
-    st.session_state.user = None
-
-
-st.title("Accounts")
-accounts = get_accounts() #-> table
-if accounts.empty:
-    st.info("No accounts found.")
-else:
-    st.dataframe(accounts,hide_index=True,
-                 use_container_width=True)
+from db.accounts import create_account
 # from pages.create_address import create_address_form
 # from pages.create_contact import create_contact_form, drop_down_contacts
 
@@ -28,10 +16,8 @@ with st.form("Create an account"):
     # from pages.create_address import create_address_form
     # from pages.create_contact import create_contact_form
 if submitted:
-    company = company.strip()
     if not company:
         st.error("Please fill in all required fields.")
     else:
-        create_account(company,primaryContactId)
+        account_id =create_account(company)
         st.rerun()
-

@@ -2,30 +2,47 @@ from sqlalchemy import text
 from db.connection import conn
 
 
+    # ContactId int GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
+    # fName VARCHAR not null, 
+    # lName VARCHAR not null, 
+    # email varchar not null,
+    # phone varchar,
+    # acctId int REFERENCES Accounts (acctid),
+    # statusId int REFERENCES status(statusid),
+    # addressID int REFERENCES addresses(addressId),
+    # created_at TIMESTAMP DEFAULT now(),
+    # deleted BOOLEAN DEFAULT FALSE
+def create_account(fName,lName,email,phone=None,acctId=None,statusId=None,addressID=None):
 
-def create_account(company,primaryContactId=None,statusId=None,addressID=None):
-    primaryContactId = primaryContactId or None
-    statusId = statusId or None
-    addressID = addressID or None
     sql = text("""
-        INSERT INTO accounts(company,primaryContactId,statusId,addressID)
+        INSERT INTO contacts(fName,lName,email,phone,acctId,statusId,addressID)
         VALUES
-            (:company,:primaryContactId,:statusId,:addressID)
+            (
+            :fName,
+            :lName,
+            :email,
+            :phone,
+            :acctId,
+            :statusId,
+            :addressID)
                         
-        RETURNING acctid
+        RETURNING contactid
     """)
 
     params = {
-        "company": company,
-        "primaryContactId": primaryContactId,
-        "statusId": statusId,
-        "addressID": addressID
+        "fName" : fName,
+        "lName" : lName,
+        "email" : email,
+        "phone" : phone,
+        "acctId" : acctId,
+        "statusId" : statusId,
+        "addressID" : addressID
     }
 
     with conn.session as session:
-        account_id= session.execute(sql, params).scalar_one()
+        contact_id= session.execute(sql, params).scalar_one()
         session.commit()
-    return account_id
+    return contact_id
 
 def get_accounts(
     created_start=None,
