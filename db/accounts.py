@@ -4,18 +4,12 @@ from db.connection import conn
 
 
 def create_account(company,primaryContactId,statusId,addressID):
- #acctId int GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
-#     company VARCHAR not null, 
-#     primaryContactId int,
-#     statusId int REFERENCES status(statusid),
-#     addressID int REFERENCES addresses(addressId),
-#     created_at TIMESTAMP DEFAULT now(),
-#     deleted BOOLEAN DEFAULT FALSE
+
     sql = text("""
         INSERT INTO accounts(company,primaryContactId,statusId,addressID)
         VALUES
             (:company,:primaryContactId,:statusId,:addressID)
-                        )
+                        
         RETURNING acctid
     """)
 
@@ -30,102 +24,79 @@ def create_account(company,primaryContactId,statusId,addressID):
         account_id= session.execute(sql, params).scalar_one()
         session.commit()
     return account_id
-def get_accounts(created_s,created_e,status,search_company):
-    sql = text("""
-    select 
-    a.company,
-    s.status,
-    a.created_at 
-    from accounts a
-    inner join status s on s.statusid = a.statusid and s.statustype = 'acc'
-   
-""")
-    if  created_s != "" or created_e != "" or status != "" or search_company != "" :
-         
-        sql += """ 
-        where 
+
+def get_accounts(
+    created_start=None,
+    created_end=None,
+    status_id=None,
+    company_search=None
+):
+    sql = """
+        SELECT
+            a.acctid,
+            a.company,
+            a.statusid,
+            s.status,
+            a.created_at
+        FROM accounts a
+        LEFT JOIN status s
+            ON s.statusid = a.statusid
+            AND s.statustype = 'acc'
+    """
+
+    conditions = ["a.deleted = false"]
+    params = {}
+
+    if created_start is not None:
+        conditions.append("a.created_at >= :created_start")
+        params["created_start"] = created_start
+
+    if created_end is not None:
+        conditions.append("a.created_at <= :created_end")
+        params["created_end"] = created_end
+
+    if status_id is not None:
+        conditions.append("a.statusid = :status_id")
+        params["status_id"] = status_id
+
+    if company_search:
+        conditions.append("a.company ILIKE :company_search")
+        params["company_search"] = f"%{company_search}%"
+
+    sql += " WHERE " + " AND ".join(conditions)
+    sql += " ORDER BY a.company"
+
+    return conn.query(sql, params=params, ttl=0)
+def get_account(account_id):
+    result = conn.query(
         """
-        if created_s != "" and created_e != "":
-            sql += """" a.created_at  >= :created_s and a.created <= :created_e """
-        elif created_s != "":
-            sql += """" a.created_at  >= :created_s """
-        elif created_e != "":
-                    sql += """" a.created_at  <= :created_e """
-        if status != "":
-                    sql += """" s.statusid == :status"""
-        if search_company != "":
-                    sql += """" a.company like %:search_company%"""
-        
-        params = {
-            "created_s": created_s,
-            "created_e": created_e,
-            "status": status,
-            "search_company": search_company,
-        
+        SELECT
+            a.acctid,
+            a.company,
+            a.primarycontactid,
+            a.statusid,
+            s.status,
+            a.created_at,
+            ad.addressid,
+            ad.address,
+            ad.city,
+            ad.state,
+            ad.zip
+        FROM accounts a
+        LEFT JOIN status s
+            ON s.statusid = a.statusid
+            AND s.statustype = 'acc'
+        LEFT JOIN addresses ad
+            ON ad.addressid = a.addressid
+            AND ad.deleted = false
+        WHERE a.acctid = :account_id
+          AND a.deleted = false
+        """,
+        params={"account_id": account_id},
+        ttl=0
+    )
 
-    }
-def get_account(acctid):
-      sql = text("""
-        select a.company,s.status,a.created_at,ad.address from accounts a
-        inner join status s on s.statusid = a.statusid and s.statustype = 'acc'
-        inner join addresses ad on ad.addressid = a.addressid
-        inner join addressstypes at on at.addressTypeId = ad.addressTypeid and at.addresstype = 'acc' 
-        where a.acctid = :acctid
-     """)
-      params = {
-        "acctid": acctid
-    }
-# insert into status(status, statusType) 
-# values ('tentative', 'acc'),
-#        ('lead', 'acc'),
-#        ('active', 'acc'),
-#        ('contract', 'acc'),
-#        ('inactive', 'acc'),
-#        ('active', 'con'),
-#        ('contract', 'con'),
-#        ('inactive', 'con'),
-#        ('active', 'cot'),
-#        ('process', 'cot'),
-#        ('inactive', 'cot'),
-#        ('active', 'lea'),
-#        ('inactive', 'lea');
-# create table AddressTypes(
-#     addressTypeId int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-#     addressType varchar
-# );
-# create table Addresses(
-#     AddressId int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-#     addressTypeId int REFERENCES AddressTypes( addressTypeId),
-#     address varchar,
-#     city varchar,
-#     state varchar,
-#     zip varchar,
-#     created_at TIMESTAMP DEFAULT now(),
-#     deleted BOOLEAN DEFAULT FALSE
-# );
-# create table Accounts(
-#     acctId int GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
-#     company VARCHAR not null, 
-#     primaryContactId int,
-#     statusId int REFERENCES status(statusid),
-#     addressID int REFERENCES addresses(addressId),
-#     created_at TIMESTAMP DEFAULT now(),
-#     deleted BOOLEAN DEFAULT FALSE
+    if result.empty:
+        return None
 
-# );
-
-# create table Contacts(
-#     ContactId int GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
-#     fName VARCHAR not null, 
-#     lName VARCHAR not null, 
-#     email varchar not null,
-#     phone varchar,
-#     acctId int REFERENCES Accounts (acctid),
-#     statusId int REFERENCES status(statusid),
-#     addressID int REFERENCES addresses(addressId),
-#     created_at TIMESTAMP DEFAULT now(),
-#     deleted BOOLEAN DEFAULT FALSE
-#     );
-
-# ALTER TABLE Accounts ADD CONSTRAINT fk_primary_contact 
-#     FOREIGN KEY (primaryContactId) REFERENCES Contacts(contactId);
+    return result.iloc[0]

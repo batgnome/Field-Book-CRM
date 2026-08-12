@@ -26,7 +26,8 @@ else:
     pages = [
         st.Page("pages/test.py"),
         st.Page("pages/logout.py"),
-        st.Page("pages/profile.py") 
+        st.Page("pages/profile.py"),
+        st.Page("pages/accounts.py") 
     ]
 pg = st.navigation(pages,position="top")
 
