@@ -12,7 +12,7 @@ from db.connection import conn
     # addressID int REFERENCES addresses(addressId),
     # created_at TIMESTAMP DEFAULT now(),
     # deleted BOOLEAN DEFAULT FALSE
-def create_account(fName,lName,email,phone=None,acctId=None,statusId=None,addressID=None):
+def create_contact(fName,lName,email,phone=None,acctId=None,statusId=None,addressID=None):
 
     sql = text("""
         INSERT INTO contacts(fName,lName,email,phone,acctId,statusId,addressID)
