@@ -31,22 +31,28 @@ def get_accounts(
     created_start=None,
     created_end=None,
     status_id=None,
-    company_search=None
+    company_search=None,
+    archived=False
 ):
     sql = """
-        SELECT
+       SELECT
             a.acctid,
             a.company,
             a.statusid,
             s.status,
-            a.created_at
+            a.created_at,
+            Case when a.deleted then 'archived' else 'active'  end as archived
         FROM accounts a
         LEFT JOIN status s
             ON s.statusid = a.statusid
             AND s.statustype = 'acc'
+      
+        
     """
-
-    conditions = ["a.deleted = false"]
+    if  not archived:
+        conditions = ["a.deleted = false"]
+    else:
+        conditions = ["a.deleted = true"]
     params = {}
 
     if created_start is not None:
@@ -69,7 +75,7 @@ def get_accounts(
     sql += " ORDER BY a.company"
 
     return conn.query(sql, params=params, ttl=0)
-def get_account(account_id):
+def get_account(account_id, archived=False):
     result = conn.query(
         """
         SELECT
@@ -102,3 +108,15 @@ def get_account(account_id):
         return None
 
     return result.iloc[0]
+
+def delete_account(acctid):
+    sql = text("""
+        UPDATE accounts
+        SET deleted = true
+        WHERE acctid = :acctid
+    """)
+
+    with conn.session as session:
+        session.execute(sql, {"acctid": acctid})
+        session.commit()
+    

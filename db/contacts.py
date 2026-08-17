@@ -1,17 +1,6 @@
 from sqlalchemy import text
 from db.connection import conn
 
-
-    # ContactId int GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
-    # fName VARCHAR not null, 
-    # lName VARCHAR not null, 
-    # email varchar not null,
-    # phone varchar,
-    # acctId int REFERENCES Accounts (acctid),
-    # statusId int REFERENCES status(statusid),
-    # addressID int REFERENCES addresses(addressId),
-    # created_at TIMESTAMP DEFAULT now(),
-    # deleted BOOLEAN DEFAULT FALSE
 def create_contact(fName,lName,email,phone=None,acctId=None,statusId=None,addressID=None):
 
     sql = text("""
@@ -44,56 +33,29 @@ def create_contact(fName,lName,email,phone=None,acctId=None,statusId=None,addres
         session.commit()
     return contact_id
 
-def get_accounts(
-    created_start=None,
-    created_end=None,
-    status_id=None,
-    company_search=None
-):
+def get_contacts():
     sql = """
         SELECT
-            a.acctid,
-            a.company,
-            a.statusid,
-            s.status,
-            a.created_at
-        FROM accounts a
-        LEFT JOIN status s
-            ON s.statusid = a.statusid
-            AND s.statustype = 'acc'
+            c.contactid,
+            c.fname,
+            c.lname,
+            c.email
+        FROM contacts c
+        where c.acctid is null
     """
 
-    conditions = ["a.deleted = false"]
-    params = {}
 
-    if created_start is not None:
-        conditions.append("a.created_at >= :created_start")
-        params["created_start"] = created_start
-
-    if created_end is not None:
-        conditions.append("a.created_at <= :created_end")
-        params["created_end"] = created_end
-
-    if status_id is not None:
-        conditions.append("a.statusid = :status_id")
-        params["status_id"] = status_id
-
-    if company_search:
-        conditions.append("a.company ILIKE :company_search")
-        params["company_search"] = f"%{company_search}%"
-
-    sql += " WHERE " + " AND ".join(conditions)
-    sql += " ORDER BY a.company"
-
-    return conn.query(sql, params=params, ttl=0)
-def get_account(account_id):
+    return conn.query(sql)
+def contact_id(contact_id):
     result = conn.query(
         """
         SELECT
-            a.acctid,
+            c.contactid,
+            c.fname,
+            c.lname,
+            c.email,
+            c.acctid,
             a.company,
-            a.primarycontactid,
-            a.statusid,
             s.status,
             a.created_at,
             ad.addressid,
@@ -101,17 +63,18 @@ def get_account(account_id):
             ad.city,
             ad.state,
             ad.zip
-        FROM accounts a
+        FROM contacts c
         LEFT JOIN status s
-            ON s.statusid = a.statusid
-            AND s.statustype = 'acc'
+            ON s.statusid = c.statusid
+            AND s.statustype = 'cont'
         LEFT JOIN addresses ad
-            ON ad.addressid = a.addressid
+            ON ad.addressid = c.addressid
             AND ad.deleted = false
+        LEFT JOIN accounts a on a.primarycontactid = c.contactid
         WHERE a.acctid = :account_id
           AND a.deleted = false
         """,
-        params={"account_id": account_id},
+        params={"contact_id": contact_id},
         ttl=0
     )
 

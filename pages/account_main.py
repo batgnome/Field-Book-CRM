@@ -1,5 +1,5 @@
 import streamlit as st
-from components.accounts.create_account import create_account_form
+from components.accounts.create_account import create_update_account_form
 from components.accounts.show_accounts import show_accounts
 
 
@@ -8,7 +8,7 @@ st.title("Accounts")
 if "account_view" not in st.session_state:
     st.session_state.account_view = "accounts"
 
-col1, col2 = st.columns(2)
+col1, col2, col3 = st.columns(3)
 
 with col1:
     if st.button("Create Account"):
@@ -19,8 +19,12 @@ with col2:
         st.session_state.account_view = "accounts"
 
 
+
+
 if st.session_state.account_view == "create":
-    create_account_form()
+    create_update_account_form()
 
 elif st.session_state.account_view == "accounts":
     show_accounts()
+elif st.session_state.account_view == "edit":
+    create_update_account_form(st.session_state.selected_account)
