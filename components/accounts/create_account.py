@@ -1,5 +1,6 @@
 import streamlit as st
-from db.accounts import create_account,get_account
+from db.accounts import create_account,get_account,update_account
+from db.contacts import get_contacts
 
 
 def create_update_account_form(acctid=None):
@@ -20,17 +21,26 @@ def create_update_account_form(acctid=None):
         else:
             company = st.text_input("company")
             primaryContactId = st.text_input("primary Contact Id")
-            
         submitted = st.form_submit_button("Submit")
 
-        st.selectbox("Primary Contact", options=["none"])
+        contacts = get_contacts()
+        primarycontact = st.selectbox("Primary Contact", options=["none"])
         # contactid = drop_down_contacts()
         # from pages.create_address import create_address_form
         # from pages.create_contact import create_contact_form
-    if submitted:
-        company = company.strip()
-        if not company:
-            st.error("Please fill in all required fields.")
-        else:
-            create_account(company,primaryContactId)
-            st.rerun()
+    if acctid:
+        if submitted:
+            company = company.strip()
+            if not company:
+                st.error("Please fill in all required fields.")
+            else:
+                update_account(acctid, company,primaryContactId)
+                st.rerun()
+    else:
+        if submitted:
+            company = company.strip()
+            if not company:
+                st.error("Please fill in all required fields.")
+            else:
+                create_account(company,primaryContactId)
+                st.rerun()

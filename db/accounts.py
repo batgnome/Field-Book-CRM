@@ -119,4 +119,21 @@ def delete_account(acctid):
     with conn.session as session:
         session.execute(sql, {"acctid": acctid})
         session.commit()
-    
+
+def update_account(acctid, company,primaryContactId=None,statusId=None,addressID=None):
+    sql = text("""
+        UPDATE accounts
+        SET company = :company, 
+        primaryContactId= :primaryContactId,
+        statusId = :statusId,
+        addressID = :addressID
+        WHERE acctid = :acctid
+    """)
+
+    with conn.session as session:
+        session.execute(sql, {"acctid": acctid,
+                            "company" :company,
+                            "primaryContactId" :primaryContactId,
+                            "statusId" :statusId,
+                            "addressID" :addressID})
+        session.commit()
