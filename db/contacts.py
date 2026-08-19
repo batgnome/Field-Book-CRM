@@ -45,7 +45,7 @@ def get_contacts():
     """
 
 
-    return conn.query(sql)
+    return conn.query(sql, ttl=0)
 def contact_id(contact_id):
     result = conn.query(
         """

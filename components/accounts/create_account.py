@@ -22,9 +22,22 @@ def create_update_account_form(acctid=None):
             company = st.text_input("company")
             primaryContactId = st.text_input("primary Contact Id")
         submitted = st.form_submit_button("Submit")
-
+        
         contacts = get_contacts()
-        primarycontact = st.selectbox("Primary Contact", options=["none"])
+        print(contacts)
+        contact_options = {
+            int(row["contactid"]): f"{row['fname']} {row['lname']}"
+            for _, row in contacts.iterrows()
+        }
+
+        primaryContactId = st.selectbox(
+            "Primary Contact",
+            options=[None] + list(contact_options.keys()),
+            format_func=lambda contact_id: (
+                "None" if contact_id is None
+                else contact_options[contact_id]
+            )
+        )
         # contactid = drop_down_contacts()
         # from pages.create_address import create_address_form
         # from pages.create_contact import create_contact_form
