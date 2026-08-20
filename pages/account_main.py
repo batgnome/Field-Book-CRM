@@ -1,6 +1,6 @@
 import streamlit as st
 from components.accounts.create_account import create_update_account_form
-from components.accounts.show_accounts import show_accounts
+from components.accounts.show_accounts import show_accounts, show_account
 
 
 st.title("Accounts")
@@ -28,3 +28,6 @@ elif st.session_state.account_view == "accounts":
     show_accounts()
 elif st.session_state.account_view == "edit":
     create_update_account_form(st.session_state.selected_account)
+elif st.session_state.account_view == "view":
+    st.write("here")
+    show_account(st.session_state.selected_account)

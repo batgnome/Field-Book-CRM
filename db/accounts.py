@@ -75,6 +75,7 @@ def get_accounts(
     sql += " ORDER BY a.company"
 
     return conn.query(sql, params=params, ttl=0)
+
 def get_account(account_id, archived=False):
     result = conn.query(
         """
@@ -89,7 +90,9 @@ def get_account(account_id, archived=False):
             ad.address,
             ad.city,
             ad.state,
-            ad.zip
+            ad.zip,
+            c.fname,
+            c.lname
         FROM accounts a
         LEFT JOIN status s
             ON s.statusid = a.statusid
@@ -97,6 +100,8 @@ def get_account(account_id, archived=False):
         LEFT JOIN addresses ad
             ON ad.addressid = a.addressid
             AND ad.deleted = false
+        LEFT JOIN contacts c 
+            ON c.contactid = a.primarycontactid
         WHERE a.acctid = :account_id
           AND a.deleted = false
         """,
@@ -106,7 +111,7 @@ def get_account(account_id, archived=False):
 
     if result.empty:
         return None
-
+    
     return result.iloc[0]
 
 def delete_account(acctid):
