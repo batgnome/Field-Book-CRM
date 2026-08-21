@@ -38,9 +38,8 @@ def create_update_account_form(acctid=None):
                 else contact_options[contact_id]
             )
         )
-        # contactid = drop_down_contacts()
-        # from pages.create_address import create_address_form
-        # from pages.create_contact import create_contact_form
+        # show_create_contact_form()
+    
     if acctid:
         if submitted:
             company = company.strip()
